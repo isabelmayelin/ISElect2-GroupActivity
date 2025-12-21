@@ -1,31 +1,35 @@
 <?php
 session_start();
 
-/* login check ONLY */
 if(!isset($_SESSION['username'])){
     header("Location:index.php");
     exit;
 }
 
-/* ensure cart exists */
 if(!isset($_SESSION['cart'])){
     $_SESSION['cart'] = [];
 }
 
-/* same products list (must match shop page IDs) */
-$products = [
-    1=>['name'=>'White Leather Sandals','price'=>359],
-    2=>['name'=>'Elegant Red High Heels','price'=>1200],
-    3=>['name'=>'Hiking Boots','price'=>5599],
-    4=>['name'=>'Elegant Nude High Heels','price'=>1200],
-    5=>['name'=>'Doll Shoes','price'=>269],
-    6=>['name'=>'Formal Sandals','price'=>359],
-    7=>['name'=>'Black Flat Sandals','price'=>235],
-    8=>['name'=>'Black Leather Sandals','price'=>359],
-    9=>['name'=>'Brown Leather Sandals','price'=>359],
-];
+$host="127.0.0.1"; 
+$user="root"; 
+$pass=""; 
+$db="m.i.a";
 
-/* remove item */
+$conn = new mysqli($host,$user,$pass,$db);
+if($conn->connect_error) die("Connection failed: ".$conn->connect_error);
+
+$products = [];
+$result = $conn->query("SELECT * FROM `product`");
+while($row = $result->fetch_assoc()){
+    $products[$row['Product_id']] = [
+        'name' => $row['product_name'],
+        'price' => $row['price'],
+        'img' => $row['image_link'],
+        'desc' => $row['description']
+    ];
+}
+
+
 if(isset($_GET['remove'])){
     $rid = intval($_GET['remove']);
     unset($_SESSION['cart'][$rid]);
@@ -47,6 +51,7 @@ th{background:#ff4da6;color:white;}
 a.button,button{padding:8px 14px;background:#ff4da6;color:white;text-decoration:none;border:none;border-radius:5px;cursor:pointer;}
 a.button:hover,button:hover{background:#e60073;}
 .empty{text-align:center;margin-top:50px;font-size:18px;color:#555;}
+img.cart-img{width:80px;height:80px;object-fit:cover;border-radius:5px;}
 </style>
 </head>
 <body>
@@ -81,7 +86,12 @@ foreach($_SESSION['cart'] as $id => $qty):
     $grandTotal += $total;
 ?>
 <tr>
-    <td><?=htmlspecialchars($products[$id]['name'])?></td>
+    <td>
+        <?php if(!empty($products[$id]['img'])): ?>
+            <img src="<?=htmlspecialchars($products[$id]['img'])?>" alt="<?=htmlspecialchars($products[$id]['name'])?>" class="cart-img">
+        <?php endif; ?>
+        <?=htmlspecialchars($products[$id]['name'])?>
+    </td>
     <td>₱<?=number_format($products[$id]['price'],2)?></td>
     <td><?=$qty?></td>
     <td>₱<?=number_format($total,2)?></td>

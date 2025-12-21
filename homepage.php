@@ -5,25 +5,33 @@ if(!isset($_SESSION['username'])){
     exit; 
 }
 
-if(!isset($_SESSION['cart'])) $_SESSION['cart']=[];
+if(!isset($_SESSION['cart'])) $_SESSION['cart'] = [];
 
-$products = [
-    1=>['name'=>'White Leather Sandals','price'=>359,'img'=>'WHITE SANDALS.jpg','desc'=>'Comfortable loafers, sizes 7-13. Perfect for casual wear.'],
-    2=>['name'=>'Elegant Red High Heels','price'=>1200,'img'=>'RED CLASSY HIGH HEELS.jpg','desc'=>'Leather pair with 3-inch heel, sizes 5-11. Ideal for parties or work.'],
-    3=>['name'=>'Hiking Boots','price'=>5599,'img'=>'HIKING BOOTS.jpg','desc'=>'Waterproof pair, sizes 7-13. Built for trails and tough terrains.'],
-    4=>['name'=>'Elegant Nude High Heels','price'=>1200,'img'=>'NUDE CLASSY HIGH HEELS.jpg','desc'=>'Leather pair with 3-inch heel, sizes 5-11. Ideal for parties or work.'],
-    5=>['name'=>'Doll Shoes','price'=>269,'img'=>'DOLLSHOES.jpg','desc'=>'Casual and Comfortable for everyday use, sizes 7-11.'],
-    6=>['name'=>'Formal Sandals','price'=>359,'img'=>'FORMAL SANDALS.jpg','desc'=>'Casual, sizes 7-11. Ideal for work.'],
-    7=>['name'=>'Black Flat Sandals','price'=>235,'img'=>'BLACK FLAT SANDALS.jpg','desc'=>'Lightweight everyday, sizes 6-11.'],
-    8=>['name'=>'Black Leather Sandals','price'=>359,'img'=>'BLACK LEATHER SANDALS.jpg','desc'=>'Comfortable loafers, sizes 7-13. Perfect for casual wear.'],
-    9=>['name'=>'Brown Leather Sandals','price'=>359,'img'=>'BROWN LEATHER SANDALS.jpg','desc'=>'Comfortable loafers, sizes 7-13. Perfect for casual wear.'],
-];
+$host="127.0.0.1"; 
+$user="root"; 
+$pass=""; 
+$db="m.i.a";
+
+$conn = new mysqli($host,$user,$pass,$db);
+if($conn->connect_error) die("Connection failed: ".$conn->connect_error);
+
+
+$products = [];
+$result = $conn->query("SELECT * FROM `product` ORDER BY Product_id ASC");
+while($row = $result->fetch_assoc()){
+    $products[$row['Product_id']] = [
+        'name' => $row['product_name'],
+        'price' => $row['price'],
+        'img' => $row['image_link'],
+        'desc' => $row['description']
+    ];
+}
 
 if(isset($_POST['add_to_cart'])){
-    $pid=intval($_POST['pid']);
+    $pid = $_POST['pid'];
     if(isset($products[$pid])){
         if(isset($_SESSION['cart'][$pid])) $_SESSION['cart'][$pid]++;
-        else $_SESSION['cart'][$pid]=1;
+        else $_SESSION['cart'][$pid] = 1;
     }
     header("Location: ".$_SERVER['PHP_SELF']);
     exit;
@@ -48,7 +56,6 @@ button:hover,a.button:hover{background:#e60073;}
 .product-card p{font-size:0.95rem;margin-bottom:8px;}
 
 .cart-count{position:absolute;top:10px;right:10px;background:#fff;color:#ff4da6;padding:5px 10px;border-radius:20px;border:2px solid #ff4da6;}
-
 
 .admin-btn{
     position:absolute;
@@ -76,7 +83,6 @@ button:hover,a.button:hover{background:#e60073;}
 <body>
 
 <header>
-    
     <a href="admin_dashboard.php" class="admin-btn">A</a>
 
     <h1>Welcome, <?=htmlspecialchars($_SESSION['username'])?></h1>
